@@ -1,0 +1,82 @@
+{
+  "@context": "https://gftd.ai/ns/magatama/v1",
+  "@id": "did:web:news.gftd.ai",
+  "accent": "#0ea5e9",
+  "convoSystemPrompt": "You are the news.gftd.ai agent — the A layer (primary-source collection). You ingest and land primary sources (RSS, government filings, live audio, on-chain, datasets, original reporting) with provenance into the kotoba Datomic source corpus. You do NOT publish to subjects — the A→B medium (linking, generation, delivery) is media.gftd.ai. Respond helpfully in the user's language.",
+  "deploy": {},
+  "duties": [
+    "勤労の義務"
+  ],
+  "governance": {
+    "classification": "public",
+    "complianceFrameworks": [],
+    "raci": "responsible"
+  },
+  "icon": "N",
+  "kpi": [
+    "intel briefs published",
+    "articles committed",
+    "writer DIDs attributed"
+  ],
+  "name": "news",
+  "nanoid": "nwscr001",
+  "performerType": "service",
+  "pool": {},
+  "profile": {
+    "agentType": "autonomous",
+    "capabilities": [
+      "news_publish_intel",
+      "news_commit_article",
+      "news_rss_ingest",
+      "news_live_audio_ingest",
+      "news_register_live_audio_source",
+      "news_schedule_live_audio_ingest",
+      "news_list_sources",
+      "news_get_article"
+    ],
+    "category": "media",
+    "description": "news.gftd.ai — primary-source collection (A layer): ingests RSS / government / live audio / on-chain / datasets / original reporting with provenance into the kotoba Datomic source corpus. The A→B medium is media.gftd.ai (ADR-2606161200).",
+    "displayName": "News (news.gftd.ai) — primary sources",
+    "isBot": true,
+    "operator": "etzhayyim",
+    "protocols": [
+      "xrpc",
+      "mcp"
+    ]
+  },
+  "project": "news",
+  "routes": [
+    {
+      "host": "news.gftd.ai",
+      "paths": [
+        "/"
+      ],
+      "tls": true
+    }
+  ],
+  "runtimeType": "worker",
+  "space": {
+    "channels": [
+      {
+        "default": true,
+        "description": "news.gftd.ai publishing pipeline updates",
+        "kind": "public",
+        "name": "news-feed"
+      }
+    ],
+    "description": "news.gftd.ai — Datomic-backed intel + article publishing",
+    "historyVisibility": "world-readable",
+    "joinRule": "public",
+    "name": "News"
+  },
+  "triggers": {
+    "subscribeRepos": {
+      "collections": [
+        "app.bsky.feed.post",
+        "app.bsky.graph.follow",
+        "ai.gftd.apps.news.article"
+      ]
+    }
+  },
+  "uiType": "api"
+}

@@ -1,0 +1,48 @@
+{
+  "name": "ai-gftd-project-news",
+  "main": "src/app.cljc",
+  "compatibility_date": "2025-03-17",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  // vanity host only — gftd deploy auto-prepends the {nanoid}.gftd.ai route.
+  "routes": [
+    {
+      "pattern": "news.gftd.ai/*",
+      "zone_name": "gftd.ai"
+    }
+  ],
+  "vars": {
+    "NEWS_VERSION": "0.1.0-datomic-cljs",
+    "NEWS_ACTOR_DID": "did:web:news.gftd.ai",
+    // Canonical kotobase endpoint (owner 2026-06-11). kotobase.net proxies the
+    // datomic surface (reads + operator-gated transact/with) to the kotoba pod
+    // and translates the tenant NSID below → com.etzhayyim.apps.kotoba.*.
+    "KOTOBA_BACKEND_URL": "https://kotobase.net",
+    // Tenant-facing Datomic XRPC namespace (kotobase.net translates to the
+    // backend com.etzhayyim.apps.kotoba.datomic.* surface). The graph label is
+    // hashed client-side to a CIDv1 (graphCid in app.cljc).
+    "KOTOBA_DATOMIC_NSID": "ai.gftd.apps.kotobase.datomic",
+    "KOTOBA_GRAPH": "news-intel-v1",
+    // litellm OpenAI-compatible gateway (Vultr A16 pool, CF-tunnel public host).
+    // Model id resolved via resolveModelId()/MURAKUMO_DEFAULT_MODEL — never hardcoded.
+    "LITELLM_URL": "https://gemma.gftd.ai/v1",
+    "MURAKUMO_DEFAULT_MODEL": "gemma-4-e4b-it",
+    // pod dispatcher for deferred heavy work (live-audio capture/STT, bulk RSS sweeps).
+    "NEWS_POD_URL": "https://news-actor.gftd.ai"
+  },
+  // Regenerate the ClojureScript ESM bundle (js/news.js) before wrangler
+  // bundles src/app.cljc which imports it.
+  "build": {
+    "command": "cd clj && npx shadow-cljs release worker"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // secrets (wrangler secret put):
+  //   KOTOBA_BEARER — news's OWN session JWT (sub=did:web:news.gftd.ai), issued
+  //                   by authn.gftd.ai. kotobase.net authorizes news as an
+  //                   operator via its KOTOBASE_OPERATOR_DIDS allowlist and
+  //                   presents the pod operator identity on news's behalf, so a
+  //                   plain news JWT is sufficient for both q and transact.
+}

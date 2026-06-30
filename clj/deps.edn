@@ -1,0 +1,23 @@
+{:paths ["src"]
+
+ ;; news.gftd.ai — ClojureScript edge worker core.
+ ;;
+ ;; The whole news.* business core is portable, dependency-free `.cljc`:
+ ;; pure validation, EDN tx/query construction for kotoba Datomic, row
+ ;; shaping/decoding, post-text formatting, live-audio policy gating, and the
+ ;; deterministic intel scorers. shadow-cljs (:cljs alias) compiles it to an
+ ;; ES module (`:target :esm`) consumed by ../src/app.cljc. There is NO JVM
+ ;; server here — the runtime is the Cloudflare Worker isolate.
+ :deps
+ {org.clojure/clojure       {:mvn/version "1.12.0"}
+  org.clojure/clojurescript {:mvn/version "1.11.132"}}
+
+ :aliases
+ {:cljs
+  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.28.20"}}}
+
+  :test
+  {:extra-paths ["test"]
+   :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+   :main-opts ["-m" "cognitect.test-runner"]
+   :exec-fn cognitect.test-runner.api/test}}}

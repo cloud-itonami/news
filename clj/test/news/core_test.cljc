@@ -1,0 +1,56 @@
+(ns news.core-test
+  "JVM unit tests for the pure news (A-layer) cores. Run: clojure -M:test"
+  (:require [clojure.test :refer [deftest is testing]]
+            [news.core :as core]
+            [news.taxonomy :as tax]
+            [news.policy :as policy]))
+
+(deftest source-type-taxonomy
+  (testing "source-type vocabulary + normalization"
+    (is (= 10 (count tax/source-types)))
+    (is (every? tax/source-type? ["rss" "official" "regulator" "liveAudio" "onchain" "original"]))
+    (is (not (tax/source-type? "bogus")))
+    (is (= "rss" (tax/normalize-source-type "BOGUS")))
+    (is (= "official" (tax/normalize-source-type "  Official ")))))
+
+(deftest lang-normalize
+  (testing "lightweight A-layer language stamp"
+    (is (= "en" (tax/normalize-lang nil)))
+    (is (= "en" (tax/normalize-lang "")))
+    (is (= "ja" (tax/normalize-lang "JA")))
+    (is (= "pt" (tax/normalize-lang "pt-BR")))
+    (is (= "zh" (tax/normalize-lang "zh_Hant")))
+    (is (= "en" (tax/normalize-lang "123")))))
+
+(deftest article-tx-stamps-provenance
+  (testing "every source gets a normalized lang; source-type normalized when given"
+    (let [tx (core/article->tx-edn {:id "art-x" :url "u" :title "t" :lang "pt-BR"
+                                    :sourceType "Official" :createdAt "ts"})]
+      (is (re-find #":news/lang \"pt\"" tx))
+      (is (re-find #":news/sourceType \"official\"" tx))
+      (is (re-find #":news/published false" tx)))
+    (let [tx (core/article->tx-edn {:id "art-y" :url "u2" :title "t2" :createdAt "ts"})]
+      ;; lang defaults to en even when absent
+      (is (re-find #":news/lang \"en\"" tx)))))
+
+(deftest writer-did-and-post
+  (testing "writer DID slug + attributed post text"
+    (is (= "did:web:news.gftd.ai:writer:google-deepmind" (core/writer-did-for-source "Google DeepMind!!")))
+    (is (= "did:web:news.gftd.ai" (core/writer-did-for-source "")))
+    (let [p (core/article->post-text {:title "T" :summary "S" :url "https://x"})]
+      (is (re-find #"https://x" p)))))
+
+(deftest query-builders-and-decode
+  (testing "vector-form Datalog + EDN cell decode"
+    (is (= "[:find (pull ?e [*]) :where [?e :news/id ?id] [?e :news/sourceId \"s1\"]]"
+           (core/q-list-articles "s1")))
+    (is (= "[:find (pull ?e [*]) :where [?e :news/id ?id]]" (core/q-list-articles nil)))
+    (is (= 42 (core/decode-cell "42")))
+    (is (true? (core/decode-cell "true")))
+    (is (= "hi" (core/decode-cell "\"hi\"")))))
+
+(deftest live-audio-policy
+  (testing "rights gate"
+    (is (:blocked (policy/gate "unknown" true)))
+    (is (not (:blocked (policy/gate "gov-open" true))))
+    (is (false? (:retainAllowed (policy/gate "transcript-only" true))))))

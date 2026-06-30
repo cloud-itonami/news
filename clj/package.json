@@ -1,0 +1,12 @@
+{
+  "name": "news-cljs-core",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "shadow-cljs": "2.28.20"
+  },
+  "scripts": {
+    "release": "shadow-cljs release worker",
+    "watch": "shadow-cljs watch worker"
+  }
+}

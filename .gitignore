@@ -1,0 +1,39 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Svelte / web builds
+.svelte-kit/
+.next/
+build/
+dist/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Local env and caches
+.env
+.env.*
+!.env.example
+.direnv/
+.cache/
+.nx/
+.turbo/
+
+# Logs / test output
+*.log
+coverage/
+test-results/

@@ -1,0 +1,36 @@
+;; news.gftd.ai edge-worker core build.
+;;
+;; :target :esm emits a tree-shakeable ES module exporting the pure news.core
+;; fns by name, so ../src/app.cljc can `import * as news from "../js/news.js"`.
+;; No :browser (no DOM) and no :node-library (no Node globals) — the output
+;; runs in a V8 isolate (Cloudflare Worker). All async IO stays in app.cljc;
+;; these exports are sync pure logic only.
+{:deps   {:aliases [:cljs]}
+ :builds {:worker
+          {:target     :esm
+           :output-dir "../js"
+           :modules    {:news
+                        {:exports {validatePublishIntel   news.core/validate-publish-intel
+                                   validateCommitArticle  news.core/validate-commit-article
+                                   articleToTxEdn         news.core/article->tx-edn
+                                   reconcilePostTxEdn     news.core/reconcile-post-tx-edn
+                                   liveAudioSourceToTxEdn news.core/live-audio-source->tx-edn
+                                   scheduleStateTxEdn     news.core/schedule-state-tx-edn
+                                   articleToPostText      news.core/article->post-text
+                                   writerDidForSource     news.core/writer-did-for-source
+                                   qListArticles          news.core/q-list-articles
+                                   qByArticleId           news.core/q-by-article-id
+                                   qByRkey                news.core/q-by-rkey
+                                   qListSources           news.core/q-list-sources
+                                   qListLiveAudioSources  news.core/q-list-live-audio-sources
+                                   qStats                 news.core/q-stats
+                                   shapeRows              news.core/shape-rows
+                                   decodeEntityEdn        news.core/decode-entity-edn
+                                   liveAudioPolicyGate    news.policy/live-audio-policy-gate
+                                   scoreIntel             news.score/score-intel
+                                   supportedSourceTypes   news.taxonomy/supported-source-types
+                                   sourceTypeSupported    news.taxonomy/js-source-type?
+                                   normalizeSourceType    news.taxonomy/js-normalize-source-type
+                                   normalizeLang          news.taxonomy/js-normalize-lang}}}
+           :compiler-options {:output-feature-set :es2020
+                              :infer-externs :auto}}}}
