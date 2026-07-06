@@ -9,7 +9,7 @@ old `MCP router → pod → RW` publish path dead (systematic 522).
 ```
 client/agent ─XRPC─▶ CF Worker (this app)
   ├─ domain write/read ─▶ kotoba Datomic-on-IPFS
-  │     com.etzhayyim.apps.kotoba.datomic.{transact,q} via https://kotoba-origin.gftd.ai
+  │     com.etzhayyim.apps.kotoba.datomic.{transact,q} via https://kotobase.net
   ├─ social post ─▶ sdk.pds.dispatch app.bsky.feed.postAs  (writer DID)
   └─ deferred heavy work ─▶ NEWS_POD_URL/invoke + litellm (gemma.gftd.ai)
 ```
