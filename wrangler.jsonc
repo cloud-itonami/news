@@ -24,10 +24,11 @@
     // hashed client-side to a CIDv1 (graphCid in app.cljc).
     "KOTOBA_DATOMIC_NSID": "ai.gftd.apps.kotobase.datomic",
     "KOTOBA_GRAPH": "news-intel-v1",
-    // litellm OpenAI-compatible gateway (Vultr A16 pool, CF-tunnel public host).
-    // Model id resolved via resolveModelId()/MURAKUMO_DEFAULT_MODEL — never hardcoded.
-    "LITELLM_URL": "https://gemma.gftd.ai/v1",
-    "MURAKUMO_DEFAULT_MODEL": "gemma-4-e4b-it",
+    // LITELLM_URL (gemma.gftd.ai, Vultr A16 pool) + MURAKUMO_DEFAULT_MODEL
+    // removed 2026-07 — that host is dead (k8s pod gone) and unconsumed
+    // anywhere in this app's own code. murakumo.cloud is the intended
+    // successor but isn't ready yet (no upstream LLM wired, no matching
+    // model) — not wired here until it is.
     // pod dispatcher for deferred heavy work (live-audio capture/STT, bulk RSS sweeps).
     "NEWS_POD_URL": "https://news-actor.gftd.ai"
   },
