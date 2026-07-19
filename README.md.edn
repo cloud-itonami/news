@@ -1,1 +1,1 @@
-[{:db/id -1, :news.readme/name "ai-gftd-news", :news.readme/source "orgs/gftdcojp/ai-gftd-apps-gftdcojp/60-apps/ai-gftd-project-news", :news.readme/note "Split from ai-gftd-apps-gftdcojp for west-managed project ownership."}]
+[{:db/id -1, :news.readme/name "ai-gftd-news", :news.readme/source "orgs/gftdcojp/ai-gftd-apps-gftdcojp/60-apps/ai-gftd-project-news", :news.readme/note "Canonical west owner for the TypeScript Worker I/O shell and pure ClojureScript news domain. MIGRATION.edn is the authoritative boundary and provenance record."}]

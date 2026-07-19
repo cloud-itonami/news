@@ -1,6 +1,6 @@
 (ns news.policy
-  "Pure live-audio publication policy gate. Ported from the pod worker's
-  `live_audio_policy_gate` (50-infra/k8s/news-social-arbitrage-actor/worker.cljc):
+  "Pure live-audio publication policy gate. Ported from the retired Python
+  news-social-arbitrage pod's `live_audio_policy_gate`:
   decide whether a captured public stream may be transcribed/published and
   whether the raw audio may be retained, from the source's declared rights
   policy. Runs at the edge (no IO) so the source roster / audit can be served
