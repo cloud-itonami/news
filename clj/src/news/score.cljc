@@ -3,7 +3,7 @@
   `score_text` / `score_bridge_value` / `score_intel_priority`
   (50-infra/k8s/news-social-arbitrage-actor/worker.cljc). These give a zero-cost
   baseline at the edge; the LLM narrative draft (when needed) is fetched
-  separately by app.cljc via the litellm gateway."
+  separately by the active host runtime when an independently owned LLM route exists."
   (:require [clojure.string :as str]))
 
 (defn- ->clj [x] #?(:cljs (js->clj x :keywordize-keys true) :clj x))

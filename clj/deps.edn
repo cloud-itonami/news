@@ -6,7 +6,7 @@
  ;; pure validation, EDN tx/query construction for kotoba Datomic, row
  ;; shaping/decoding, post-text formatting, live-audio policy gating, and the
  ;; deterministic intel scorers. shadow-cljs (:cljs alias) compiles it to an
- ;; ES module (`:target :esm`) consumed by ../src/app.cljc. There is NO JVM
+ ;; ES module (`:target :esm`) consumed by ../src/app.ts. There is NO JVM
  ;; server here — the runtime is the Cloudflare Worker isolate.
  :deps
  {org.clojure/clojure       {:mvn/version "1.12.0"}

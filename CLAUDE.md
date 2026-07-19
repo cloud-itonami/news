@@ -11,15 +11,15 @@ client/agent ─XRPC─▶ CF Worker (this app)
   ├─ domain write/read ─▶ kotoba Datomic-on-IPFS
   │     com.etzhayyim.apps.kotoba.datomic.{transact,q} via https://kotobase.net
   ├─ social post ─▶ sdk.pds.dispatch app.bsky.feed.postAs  (writer DID)
-  └─ deferred heavy work ─▶ NEWS_POD_URL/invoke + litellm (gemma.gftd.ai)
+  └─ deferred heavy work ─▶ NEWS_POD_URL/invoke
 ```
 
-- **Runtime**: single Cloudflare Worker. `src/app.cljc` is the TS shell — the only
+- **Runtime**: single Cloudflare Worker. `src/app.ts` is the TS shell — the only
   file `deps-score` parses; it holds every `sdk.app.command(...)` + `sdk.pds.dispatch`.
 - **Logic**: `clj/src/news/*.cljc` (ClojureScript) compiled by shadow-cljs
   (`:target :esm`) to `js/news.js`. Pure only: validation, EDN tx/query
   construction, row shaping, post text, policy gate, intel scoring. **No async
-  IO in CLJS** — app.cljc owns fetch / SDK / Web Crypto (sha256 → article id +
+  IO in CLJS** — app.ts owns fetch / SDK / Web Crypto (sha256 → article id +
   graph CID). This mirrors the platform "Worker TS = all async IO; guest =
   sync pure logic" rule.
 - **Storage**: kotoba Datomic. Articles are a decomposed datom graph
@@ -45,7 +45,7 @@ when execution defers (pod is a stateless executor that calls back via
 ```bash
 cd clj && npx shadow-cljs release worker   # → ../js/news.js
 cd .. && wrangler secret put KOTOBA_BEARER # edge-minted JWT, sub=did:web:news.gftd.ai
-gftd deploy --no-svelte                    # bundles src/app.cljc importing js/news.js
+gftd deploy --no-svelte                    # bundles src/app.ts importing js/news.js
 ```
 
 Verify: `curl https://news.gftd.ai/health`; `publishIntel` round-trip then

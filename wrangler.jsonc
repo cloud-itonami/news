@@ -1,6 +1,6 @@
 {
   "name": "ai-gftd-project-news",
-  "main": "src/app.cljc",
+  "main": "src/app.ts",
   "compatibility_date": "2025-03-17",
   "compatibility_flags": [
     "nodejs_compat"
@@ -21,7 +21,7 @@
     "KOTOBA_BACKEND_URL": "https://kotobase.net",
     // Tenant-facing Datomic XRPC namespace (kotobase.net translates to the
     // backend com.etzhayyim.apps.kotoba.datomic.* surface). The graph label is
-    // hashed client-side to a CIDv1 (graphCid in app.cljc).
+    // hashed client-side to a CIDv1 (graphCid in app.ts).
     "KOTOBA_DATOMIC_NSID": "ai.gftd.apps.kotobase.datomic",
     "KOTOBA_GRAPH": "news-intel-v1",
     // LITELLM_URL (gemma.gftd.ai, Vultr A16 pool) + MURAKUMO_DEFAULT_MODEL
@@ -33,7 +33,7 @@
     "NEWS_POD_URL": "https://news-actor.gftd.ai"
   },
   // Regenerate the ClojureScript ESM bundle (js/news.js) before wrangler
-  // bundles src/app.cljc which imports it.
+  // bundles src/app.ts which imports it.
   "build": {
     "command": "cd clj && npx shadow-cljs release worker"
   },

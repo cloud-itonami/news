@@ -1,9 +1,9 @@
 ;; news.gftd.ai edge-worker core build.
 ;;
 ;; :target :esm emits a tree-shakeable ES module exporting the pure news.core
-;; fns by name, so ../src/app.cljc can `import * as news from "../js/news.js"`.
+;; fns by name, so ../src/app.ts can `import * as news from "../js/news.js"`.
 ;; No :browser (no DOM) and no :node-library (no Node globals) — the output
-;; runs in a V8 isolate (Cloudflare Worker). All async IO stays in app.cljc;
+;; runs in a V8 isolate (Cloudflare Worker). All async IO stays in app.ts;
 ;; these exports are sync pure logic only.
 {:deps   {:aliases [:cljs]}
  :builds {:worker

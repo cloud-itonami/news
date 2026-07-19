@@ -1,6 +1,6 @@
 (ns news.core
   "Pure news.gftd.ai business core — compiled to an ES module by shadow-cljs
-  and called from ../src/app.cljc. NO async IO here: app.cljc owns fetch, the
+  and called from ../src/app.ts. NO async IO here: app.ts owns fetch, the
   magatama SDK and Web Crypto (sha256 → article id / graph CID). These fns
   validate input, build the EDN wire payloads for kotoba Datomic
   (`com.etzhayyim.apps.kotoba.datomic.{transact,q}`), shape query results, and
@@ -163,7 +163,7 @@
     (tx-edn (add-ops eid m))))
 
 ;; ── Datalog query construction ──────────────────────────────────────────────
-;; All read queries return a full entity pull so app.cljc can shape/sort/paginate.
+;; All read queries return a full entity pull so app.ts can shape/sort/paginate.
 
 (defn q-list-articles
   "Pull all article entities, optionally filtered by sourceId."

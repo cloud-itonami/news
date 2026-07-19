@@ -4,7 +4,7 @@
   This mirrors the kotoba / yatabase convention: a stable string id attribute
   doubles as the EDN entity ref, so transact + later q/pull join naturally on
   the same id with no separate schema-install round-trip (see
-  `lg_yatabase/kotoba_datomic.cljc` `yatabase_entity_to_tx_ops`). The map below
+  historical yatabase `yatabase_entity_to_tx_ops`). The map below
   is the single source of truth for attribute names used by `news.core`; it is
   documentation + a guard against typos rather than something we transact.
 
