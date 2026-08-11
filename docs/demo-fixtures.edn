@@ -1,0 +1,81 @@
+;; Inputs for `scripts/gen-demo.cljs`.
+;;
+;; These are FIXTURES, not live data. They are the *inputs* only — every number,
+;; verdict and EDN payload shown on the generated page is computed by running the
+;; repo's real `clj/src/news/*.cljc` over these at build time. Nothing on that
+;; page is typed by hand, which is the whole point: the demo cannot drift from
+;; the code, because it *is* the code's output.
+;;
+;; Keep them small and legible. The generator asserts that they still exercise
+;; the interesting behaviour (a blocked policy, a scoring spread, a
+;; normalization that actually changes its input) and refuses to emit a page
+;; that would quietly show nothing.
+
+{;; ── news.score/score-intel ────────────────────────────────────────────────
+ ;; Chosen to span the scorer's range, including the zero case. The scorer keys
+ ;; off inequality / loneliness / separation / action term lists that carry both
+ ;; English and Japanese terms, so one fixture is Japanese on purpose.
+ :articles
+ [{:label "EN · bridge + action"
+   :title "Wage gap widens as eviction filings climb"
+   :summary "A guide to how to apply for rent support before the deadline."
+   :text "Households in poverty face a widening wage gap; free hotline support is available."}
+
+  {:label "EN · isolation, no action"
+   :title "Older residents report growing loneliness"
+   :summary "Researchers describe social isolation and solitude in suburban districts."
+   :text "The study documents how excluded residents become marginalised over time."}
+
+  {:label "JA · 格差と支援"
+   :title "地域の格差と貧困、孤独の広がり"
+   :summary "無料の相談窓口と申請の支援について"
+   :text "分断と排除が進むなかで、支援の申請方法をまとめた。"}
+
+  {:label "EN · off-topic (floor)"
+   :title "Regional rail timetable updated for spring"
+   :summary "Two additional express services will run on weekday evenings."
+   :text "Operators said rolling stock maintenance was completed on schedule."}]
+
+ ;; ── news.policy/gate ──────────────────────────────────────────────────────
+ ;; Every rights policy the table knows, plus one it does not. The unknown case
+ ;; is the important one: it must fall through to deny, not to allow.
+ :rights
+ [{:policy "public-domain"   :retain-requested? true}
+  {:policy "gov-open"        :retain-requested? true}
+  {:policy "cc-by"           :retain-requested? true}
+  {:policy "fair-use-quote"  :retain-requested? true}
+  {:policy "transcript-only" :retain-requested? true}
+  {:policy "broadcast"       :retain-requested? true}
+  {:policy "unknown"         :retain-requested? true}
+  {:policy "Gov-Open"        :retain-requested? false}
+  {:policy "not-a-policy"    :retain-requested? true}]
+
+ ;; ── news.taxonomy ─────────────────────────────────────────────────────────
+ ;; The A-layer provenance stamp. Both normalizers default rather than throw, so
+ ;; the fixtures include the inputs that exercise the default path.
+ :source-types ["official" "  Official " "LIVEAUDIO" "rss" "bogus"]
+ :langs        ["JA" "pt-BR" "zh_Hant" "" "123" "en"]
+
+ ;; ── news.core ─────────────────────────────────────────────────────────────
+ ;; One article through the wire-payload builders. `id` and `createdAt` are
+ ;; supplied by app.ts in production (Web Crypto sha256 of the canonical url);
+ ;; they are fixed here so the generated page is deterministic and `--check`
+ ;; means something.
+ :tx-article
+ {:id "art-9f2c1b7e"
+  :url "https://www.example-agency.go.jp/press/2026/rent-support.html"
+  :title "Rent support scheme extended"
+  :summary "Applications open until the end of the quarter."
+  :lang "pt-BR"
+  :sourceType "  Official "
+  :sourceId "src-agency"
+  :sourceName "Example Agency 事務局"
+  :createdAt "2026-01-15T09:30:00Z"}
+
+ :post-uri "at://did:web:news.gftd.ai/app.bsky.feed.post/3kxq1"
+ :updated-at "2026-01-15T10:05:00Z"
+
+ ;; Query builders: the filtered and unfiltered form of each.
+ :query-source-id "src-agency"
+ :query-kind "liveAudio"
+ :query-status "active"}

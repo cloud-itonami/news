@@ -1,0 +1,306 @@
+#!/usr/bin/env nbb
+;; Generate `docs/demo.html` — a static demo of the news.gftd.ai edge core.
+;;
+;; WHY THIS IS A GENERATOR AND NOT A PAGE
+;; The edge core (`clj/src/news/*.cljc`) is pure and IO-free by design: app.ts
+;; owns fetch / SDK / Web Crypto, and the `.cljc` only validates, scores, gates
+;; and builds EDN wire payloads. That means the whole thing can be *shown*
+;; without a network, a deploy or a secret — but only if the shown values are
+;; actually computed. So this script imports the real namespaces, runs them over
+;; `docs/demo-fixtures.edn`, and renders whatever comes back. No output on the
+;; page is typed by hand; if the core changes, the page changes.
+;;
+;; IT REFUSES TO EMIT A PAGE THAT SHOWS NOTHING
+;; A demo whose tables are all zeros, or whose policy gate never blocks, would
+;; still look like a demo. The self-checks below (`checks`) assert that the run
+;; actually exercised the behaviour being claimed — the scorer discriminated,
+;; the gate both allowed and blocked, default-deny held, the provenance
+;; normalizers changed their input, the tx payload carries the normalized
+;; stamps. If any fails the generator exits 1 and writes nothing.
+;;
+;; THE OUTPUT IS DETERMINISTIC ON PURPOSE
+;; No timestamp, no git sha, no "generated at". The page is a pure function of
+;; (fixtures, core, dds.css), which is what makes `--check` meaningful: it can
+;; tell "the committed page is stale" apart from "the clock moved".
+;;
+;;   nbb --classpath "clj/src:<dds>/src:<css>/src:<html>/src" \
+;;       scripts/gen-demo.cljs [--out docs/demo.html] [--dds-css PATH] [--check]
+;;
+;; The design-system sources are siblings in the west workspace; from this repo
+;; the default paths resolve to ../../kotoba-lang/<repo>. `--check` re-renders
+;; and compares against the file on disk instead of writing (exit 1 if stale).
+
+(ns gen-demo
+  (:require ["fs" :as fs]
+            ["node:process" :as process]
+            ["path" :as path]
+            [clojure.edn :as edn]
+            [clojure.string :as str]
+            [css.core :as css]
+            [jp-go-dds.core :as dds]
+            [jp-go-dds.page :as dds-page]
+            [news.core :as core]
+            [news.policy :as policy]
+            [news.score :as score]
+            [news.taxonomy :as tax]))
+
+(def argv (vec *command-line-args*))
+(defn- flag? [f] (some #(= f %) argv))
+(defn- arg [f d] (let [i (.indexOf (into-array argv) f)]
+                   (if (neg? i) d (nth argv (inc i) d))))
+
+(def out-path      (arg "--out" "docs/demo.html"))
+(def fixtures-path (arg "--fixtures" "docs/demo-fixtures.edn"))
+(def dds-css-path
+  (arg "--dds-css" "../../kotoba-lang/jp-go-digital-design-system/resources/jp_go_dds/dds.css"))
+(def check? (flag? "--check"))
+
+(defn- die [msg] (println msg) (process/exit 1))
+
+(defn- slurp* [p]
+  (if (fs/existsSync p)
+    (fs/readFileSync p "utf8")
+    (die (str "missing input: " p))))
+
+(def fixtures (edn/read-string (slurp* fixtures-path)))
+
+;; ── run the real core over the fixtures ──────────────────────────────────────
+;; Every call below is the same entry point `../src/app.ts` calls (see the
+;; :exports map in clj/shadow-cljs.edn), invoked across the same JS boundary.
+
+(defn- ->clj* [x] (js->clj x :keywordize-keys true))
+
+(defn- corpus-of
+  "The same corpus `score-intel` builds internally. Replicated so the page can
+  show the topical component beside the combined score — and so the checks can
+  see it. Without it, `score-text` could return a constant and every check
+  would still pass on the strength of the actionability term alone (measured:
+  a mutation that zeroed `score-text` produced a page the generator accepted)."
+  [a]
+  (str/join " " (remove str/blank? [(:title a) (:summary a) (:text a)])))
+
+(def scored
+  (mapv (fn [{:keys [label] :as a}]
+          (let [r (->clj* (score/score-intel
+                           (clj->js (select-keys a [:title :summary :text]))))]
+            (assoc r :label label :title (:title a)
+                   :topical (score/score-text (corpus-of a)))))
+        (:articles fixtures)))
+
+(def gated
+  (mapv (fn [{:keys [policy retain-requested?]}]
+          (assoc (policy/gate policy retain-requested?) :requested retain-requested?))
+        (:rights fixtures)))
+
+(def source-type-rows
+  (mapv (fn [t] {:in t :out (tax/normalize-source-type t) :known? (tax/source-type? t)})
+        (:source-types fixtures)))
+
+(def lang-rows
+  (mapv (fn [l] {:in l :out (tax/normalize-lang l)}) (:langs fixtures)))
+
+(def article (:tx-article fixtures))
+(def article-tx   (core/article->tx-edn (clj->js article)))
+(def post-tx      (core/reconcile-post-tx-edn (:id article) (:post-uri fixtures)
+                                              (:updated-at fixtures)))
+(def post-text    (core/article->post-text (clj->js article)))
+(def writer-did   (core/writer-did-for-source (:sourceName article)))
+(def queries
+  [["listArticles (all)"        (core/q-list-articles nil)]
+   ["listArticles (by source)"  (core/q-list-articles (:query-source-id fixtures))]
+   ["byArticleId"               (core/q-by-article-id (:id article))]
+   ["listSources (by kind)"     (core/q-list-sources (:query-kind fixtures))]
+   ["listLiveAudioSources"      (core/q-list-live-audio-sources (:query-status fixtures))]
+   ["stats"                     (core/q-stats)]])
+
+;; ── self-checks: refuse to render a demo that demonstrates nothing ───────────
+
+(def ^:private arb-scores (mapv :socialArbitrageScore scored))
+(def ^:private topical-scores (mapv :topical scored))
+
+(def checks
+  [["the scorer discriminated (≥3 distinct arbitrage scores)"
+    (>= (count (distinct arb-scores)) 3)]
+   ["the scorer reached a non-trivial score (max ≥ 30)"
+    (>= (apply max arb-scores) 30)]
+   ["the scorer floors an off-topic article at 0"
+    (some zero? arb-scores)]
+   ;; The two components are scored by different functions. Check the topical
+   ;; one on its own, or a dead `score-text` hides behind actionability.
+   ["the topical component discriminated (≥3 distinct scores)"
+    (>= (count (distinct topical-scores)) 3)]
+   ["the topical component reached a non-trivial score (max ≥ 30)"
+    (>= (apply max topical-scores) 30)]
+   ["the bridge terms matched Japanese as well as English"
+    (some (fn [r] (and (str/starts-with? (:label r) "JA")
+                       (pos? (:topical r))))
+          scored)]
+   ["the rights gate allowed at least one policy"
+    (some (complement :blocked) gated)]
+   ["the rights gate blocked at least one policy"
+    (some :blocked gated)]
+   ["the rights gate denies an unrecognised policy by default"
+    (:blocked (policy/gate "not-a-policy" true))]
+   ["a rights policy allows publication while refusing audio retention"
+    (some #(and (:publishAllowed %) (not (:retainAllowed %))) gated)]
+   ["source-type normalization changed at least one input"
+    (some #(not= (:in %) (:out %)) source-type-rows)]
+   ["language normalization changed at least one input"
+    (some #(not= (:in %) (:out %)) lang-rows)]
+   ["the article tx is a vector of [:db/add …] ops"
+    (let [ops (edn/read-string article-tx)]
+      (and (vector? ops) (seq ops) (every? #(= :db/add (first %)) ops)))]
+   ["the article tx carries the normalized provenance stamps"
+    (and (str/includes? article-tx ":news/lang \"pt\"")
+         (str/includes? article-tx ":news/sourceType \"official\""))]
+   ["the post text carries the article url"
+    (str/includes? post-text (:url article))]])
+
+(let [failed (remove second checks)]
+  (when (seq failed)
+    (println "gen-demo: the fixtures no longer exercise the behaviour this page claims.")
+    (doseq [[what _] failed] (println "  ✗" what))
+    (println "Fix the core or the fixtures — do not hand-write the page.")
+    (process/exit 1)))
+
+;; ── render ───────────────────────────────────────────────────────────────────
+
+(def app-css
+  ;; EDN, not raw CSS notation (the ext-rules convention), DADS tokens only.
+  (css/css
+   {:rules
+    [[".demo-code" {:font-family "var(--font-family-mono)"
+                    :font-size "0.8125rem" :line-height 1.6 :margin 0
+                    :padding "1rem" :overflow-x "auto"
+                    :border "1px solid var(--color-neutral-solid-gray-200)"
+                    :border-radius 8
+                    :background "var(--color-neutral-solid-gray-50)"
+                    :color "var(--color-neutral-solid-gray-800)"
+                    :white-space "pre-wrap" :word-break "break-word"}]
+     [".demo-label" {:font-family "var(--font-family-mono)"
+                     :font-size "0.8125rem"
+                     :color "var(--color-neutral-solid-gray-600)"}]]}))
+
+(defn- yes-no [b] (dds/chip-label (if b "yes" "no") {:color (if b "blue" "gray")}))
+
+(defn- code-block [s] [:pre {:class "demo-code"} [:code s]])
+
+(defn- labelled-code [label s]
+  (dds/stack [:span {:class "demo-label"} label] (code-block s)))
+
+(def body
+  (dds/container
+   [:header {:class "dds-ext-hero"}
+    (dds/heading 1 "news.gftd.ai — edge core demo" {:size "45"})
+    [:p {:class "dds-ext-lead"}
+     "Every value below was produced by running this repository's "
+     [:code "clj/src/news/*.cljc"]
+     " over the fixtures in docs/demo-fixtures.edn at build time. No network, no deploy, no secrets — the core is pure by design."]]
+
+   (dds/section {:title "How to read this page" :id "about"}
+     (apply dds/notification-banner
+            {:type :info-1 :heading "Fixtures in, computed values out"}
+            [[:p "The " [:strong "inputs"] " are fixtures — they are not live articles. The "
+              [:strong "outputs"] " (scores, verdicts, EDN payloads) are computed when the page is generated, by the same functions "
+              [:code "src/app.ts"] " calls in production (the "
+              [:code ":exports"] " map in " [:code "clj/shadow-cljs.edn"] ")."]
+             [:p "Regenerate with " [:code "nbb scripts/gen-demo.cljs"]
+              ". The generator refuses to emit a page whose tables would show nothing — it asserts the scorer discriminated, the rights gate both allowed and blocked, default-deny held, and the tx payload carries normalized provenance."]]))
+
+   (dds/section {:title "Deterministic intel scoring" :id "scoring"}
+     [:p {:class "dds-ext-lead"}
+      "news.score/score-intel — an LLM-free baseline computed at the edge. The arbitrage score combines two independently scored components: "
+      [:strong "topical"] " (inequality / loneliness / separation term hits) and "
+      [:strong "actionability"] ". Terms are matched in English and Japanese; an off-topic article floors at zero."]
+     (dds/table
+      {:caption "score-intel over the article fixtures"
+       :headers ["fixture" "arbitrage" "priority" "topical" "inequality" "loneliness" "separation" "actionability"]
+       :row-header? true
+       :rows (mapv (fn [r]
+                     [(:label r)
+                      (str (:socialArbitrageScore r))
+                      (str (:priority r))
+                      (str (:topical r))
+                      (str (get-in r [:bridgeScores :inequalityBridge]))
+                      (str (get-in r [:bridgeScores :lonelinessBridge]))
+                      (str (get-in r [:bridgeScores :separationBridge]))
+                      (str (get-in r [:bridgeScores :actionability]))])
+                   scored)}))
+
+   (dds/section {:title "Live-audio rights gate" :id "rights"}
+     [:p {:class "dds-ext-lead"}
+      "news.policy/gate — decides whether a captured public stream may be published and whether the raw audio may be retained. An unrecognised policy is denied, not allowed."]
+     (dds/table
+      {:caption "gate over every known rights policy, plus one it does not know"
+       :headers ["rightsPolicy" "retain requested" "publish allowed" "retain allowed" "blocked" "reason"]
+       :row-header? true
+       :rows (mapv (fn [r]
+                     [(str (:rightsPolicy r))
+                      (yes-no (:requested r))
+                      (yes-no (:publishAllowed r))
+                      (yes-no (:retainAllowed r))
+                      (yes-no (:blocked r))
+                      (:reason r)])
+                   gated)}))
+
+   (dds/section {:title "Provenance stamps (A layer)" :id "provenance"}
+     [:p {:class "dds-ext-lead"}
+      "news.taxonomy — canonicalises the source type and language stamped on every record. Both default rather than reject: an unknown source type becomes rss, an unusable language becomes en."]
+     (dds/grid {:min "20rem"}
+       (dds/card
+        (dds/heading 3 "source type" {:size "20"})
+        (dds/table
+         {:headers ["input" "canonical" "in vocabulary"]
+          :row-header? true
+          :rows (mapv (fn [r] [(pr-str (:in r)) (:out r) (yes-no (:known? r))])
+                      source-type-rows)}))
+       (dds/card
+        (dds/heading 3 "language" {:size "20"})
+        (dds/table
+         {:headers ["input" "canonical"]
+          :row-header? true
+          :rows (mapv (fn [r] [(pr-str (:in r)) (:out r)]) lang-rows)}))))
+
+   (dds/section {:title "Datomic wire payloads" :id "wire"}
+     [:p {:class "dds-ext-lead"}
+      "news.core builds the EDN that goes to kotoba Datomic. An article is a decomposed datom graph — never a JSON blob — so it stays Datalog-queryable. Note the stamps below: the fixture supplied lang \"pt-BR\" and sourceType \"  Official \"; what is written is \"pt\" and \"official\"."]
+     (dds/stack
+      (labelled-code "article->tx-edn" article-tx)
+      (labelled-code "reconcile-post-tx-edn (after the social post lands)" post-tx)
+      (labelled-code "writer-did-for-source" writer-did)
+      (labelled-code "article->post-text (≤300 chars, attributed)" post-text)))
+
+   (dds/section {:title "Read queries" :id "queries"}
+     [:p {:class "dds-ext-lead"}
+      "Every read is a Datalog query built at the edge and sent to kotoba; app.ts shapes, sorts and paginates the pulled entities."]
+     (dds/stack
+      (into [:div {:class "dds-ext-stack"}]
+            (map (fn [[label q]] (labelled-code label q)) queries))))
+
+   (dds/section {:title "What is not shown" :id "limits"}
+     [:p {:class "dds-ext-lead"}
+      "This page covers the pure edge core only. It does not exercise the Cloudflare Worker shell, the kotoba Datomic round-trip, the PDS social post, or the deferred pod work (live-audio capture, Whisper, bulk RSS sweeps) — all of those need IO and are owned by src/app.ts or the pod. Their behaviour is not demonstrated here and should not be inferred from it."])))
+
+(def html
+  (dds-page/->page
+   {:title "news.gftd.ai — edge core demo"
+    :description "Live-generated demo of the pure news.gftd.ai edge core: deterministic intel scoring, the live-audio rights gate, provenance normalization and the Datomic EDN wire payloads."
+    :lang "en"
+    :css (slurp* dds-css-path)
+    :app-css app-css}
+   body))
+
+(if check?
+  (let [current (when (fs/existsSync out-path) (fs/readFileSync out-path "utf8"))]
+    (cond
+      (nil? current) (die (str "STALE: " out-path " does not exist. Run without --check."))
+      (not= current html) (die (str "STALE: " out-path
+                                    " differs from what the core + fixtures produce now."
+                                    " Run without --check to regenerate."))
+      :else (println (str "OK: " out-path " is up to date ("
+                          (count checks) " demo self-checks passed)"))))
+  (do
+    (fs/mkdirSync (path/dirname out-path) #js {:recursive true})
+    (fs/writeFileSync out-path html)
+    (println (str "wrote " out-path " (" (count html) " bytes); "
+                  (count checks) " demo self-checks passed"))))
