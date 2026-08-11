@@ -52,6 +52,34 @@ Verify: `curl https://news.gftd.ai/health`; `publishIntel` round-trip then
 `getArticle`/`listArticles`; direct kotoba `…datomic.q` confirms
 `:news/id "art-<h>"`.
 
+## Demo (`docs/demo.html`)
+
+The edge core is pure, so it can be shown without a deploy. `scripts/gen-demo.cljs`
+imports the real `clj/src/news/*.cljc`, runs it over `docs/demo-fixtures.edn` and
+renders the result — scoring, the live-audio rights gate, provenance stamps and the
+Datomic EDN payloads. Nothing on that page is hand-written; the fixtures are inputs
+only.
+
+```bash
+R=../../kotoba-lang                        # west siblings
+nbb --classpath "clj/src:$R/jp-go-digital-design-system/src:$R/css/src:$R/html/src" \
+    scripts/gen-demo.cljs [--check]
+```
+
+The generator **fails closed**: it asserts the run actually exercised what the page
+claims (the scorer discriminated on *both* of its components, the gate allowed and
+blocked, default-deny held for an unknown policy, the normalizers changed their
+input, the tx carried normalized stamps) and exits 1 rather than emit a page of
+zeros. Verified by mutation — neutering `score-text`, flipping the unknown-policy
+default to allow, making `normalize-lang` the identity, dropping the tx
+normalization, and removing the Japanese bridge terms each turn it red. Output is
+deterministic (no timestamp), so `--check` means "the committed page is stale", not
+"the clock moved".
+
+Skinned with `jp-go-dds` (デジタル庁デザインシステム — the workspace base design
+system) with the upstream CSS vendored inline: one self-contained file, no external
+requests. Scores 100.00 on the `design-quality` HIG/WCAG audit.
+
 ## Conventions
 
 - Core is portable `.cljc` (JVM-testable, isolate-clean). No DOM/Node globals.
