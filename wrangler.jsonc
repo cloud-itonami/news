@@ -5,16 +5,17 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  // vanity host only — gftd deploy auto-prepends the {nanoid}.gftd.ai route.
+  // 2026-09-02: gftd.ai → itonami.cloud へ（オーナー指示「gftd.ai は deprecated」）。
+  // 所有 org(cloud-itonami)と配信ゾーンの食い違いを解消する。custom_domain の形は
+  // 姉妹 repo cloud-itonami/media が 2026-08-09 に着地させたものに揃えた。
+  // 旧 news.gftd.ai は移設時点で応答なし（実測: 接続タイムアウト。同じ client から
+  // gftd.ai 自身は 200）なので、この付け替えで止まるトラフィックは無い。
   "routes": [
-    {
-      "pattern": "news.gftd.ai/*",
-      "zone_name": "gftd.ai"
-    }
+    { "pattern": "news.itonami.cloud", "custom_domain": true }
   ],
   "vars": {
     "NEWS_VERSION": "0.1.0-datomic-cljs",
-    "NEWS_ACTOR_DID": "did:web:news.gftd.ai",
+    "NEWS_ACTOR_DID": "did:web:news.itonami.cloud",
     // Canonical kotobase endpoint (owner 2026-06-11). kotobase.net proxies the
     // datomic surface (reads + operator-gated transact/with) to the kotoba pod
     // and translates the tenant NSID below → com.etzhayyim.apps.kotoba.*.
@@ -23,14 +24,16 @@
     // backend com.etzhayyim.apps.kotoba.datomic.* surface). The graph label is
     // hashed client-side to a CIDv1 (graphCid in app.ts).
     "KOTOBA_DATOMIC_NSID": "ai.gftd.apps.kotobase.datomic",
-    "KOTOBA_GRAPH": "news-intel-v1",
+    "KOTOBA_GRAPH": "news-intel-v1"
     // LITELLM_URL (gemma.gftd.ai, Vultr A16 pool) + MURAKUMO_DEFAULT_MODEL
     // removed 2026-07 — that host is dead (k8s pod gone) and unconsumed
     // anywhere in this app's own code. murakumo.cloud is the intended
     // successor but isn't ready yet (no upstream LLM wired, no matching
     // model) — not wired here until it is.
     // pod dispatcher for deferred heavy work (live-audio capture/STT, bulk RSS sweeps).
-    "NEWS_POD_URL": "https://news-actor.gftd.ai"
+    // NEWS_POD_URL has no default: news-actor.gftd.ai is dead (実測 2026-09-02、
+    // 応答なし) and gftd.ai is deprecated. 姉妹 repo media と同じ扱いで、退役した
+    // pod route は既定値にせず、生きた host を明示的に渡す。
   },
   // Regenerate the ClojureScript ESM bundle (js/news.js) before wrangler
   // bundles src/app.ts which imports it.
@@ -41,8 +44,10 @@
     "enabled": true
   }
   // secrets (wrangler secret put):
-  //   KOTOBA_BEARER — news's OWN session JWT (sub=did:web:news.gftd.ai), issued
-  //                   by authn.gftd.ai. kotobase.net authorizes news as an
+  //   KOTOBA_BEARER — news's OWN session JWT (sub=did:web:news.itonami.cloud),
+  //                   issued by the authn service. ⚠ 発行元は authn.gftd.ai だった
+  //                   が gftd.ai は deprecated —— 再発行時に itonami 側の issuer を
+  //                   使うこと。kotobase.net authorizes news as an
   //                   operator via its KOTOBASE_OPERATOR_DIDS allowlist and
   //                   presents the pod operator identity on news's behalf, so a
   //                   plain news JWT is sufficient for both q and transact.

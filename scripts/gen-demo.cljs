@@ -1,5 +1,5 @@
 #!/usr/bin/env nbb
-;; Generate `docs/demo.html` — a static demo of the news.gftd.ai edge core.
+;; Generate `docs/demo.html` — a static demo of the news.itonami.cloud edge core.
 ;;
 ;; WHY THIS IS A GENERATOR AND NOT A PAGE
 ;; The edge core (`clj/src/news/*.cljc`) is pure and IO-free by design: app.ts
@@ -191,7 +191,7 @@
 (def body
   (dds/container
    [:header {:class "dds-ext-hero"}
-    (dds/heading 1 "news.gftd.ai — edge core demo" {:size "45"})
+    (dds/heading 1 "news.itonami.cloud — edge core demo" {:size "45"})
     [:p {:class "dds-ext-lead"}
      "Every value below was produced by running this repository's "
      [:code "clj/src/news/*.cljc"]
@@ -283,8 +283,8 @@
 
 (def html
   (dds-page/->page
-   {:title "news.gftd.ai — edge core demo"
-    :description "Live-generated demo of the pure news.gftd.ai edge core: deterministic intel scoring, the live-audio rights gate, provenance normalization and the Datomic EDN wire payloads."
+   {:title "news.itonami.cloud — edge core demo"
+    :description "Live-generated demo of the pure news.itonami.cloud edge core: deterministic intel scoring, the live-audio rights gate, provenance normalization and the Datomic EDN wire payloads."
     :lang "en"
     :css (slurp* dds-css-path)
     :app-css app-css}

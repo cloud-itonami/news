@@ -1,5 +1,5 @@
 (ns news.schema
-  "Datomic attribute schema for the news.gftd.ai knowledge graph.
+  "Datomic attribute schema for the news.itonami.cloud knowledge graph.
 
   This mirrors the kotoba / yatabase convention: a stable string id attribute
   doubles as the EDN entity ref, so transact + later q/pull join naturally on
@@ -32,7 +32,7 @@
     :news/sourceId
     :news/sourceName
     :news/sourceType
-    :news/writerDid     ; did:web:news.gftd.ai:writer:{sourceName}
+    :news/writerDid     ; did:web:news.itonami.cloud:writer:{sourceName}
     :news/socialPost
     :news/published     ; boolean — a public post landed
     :news/postUri       ; at:// uri of the dispatched post

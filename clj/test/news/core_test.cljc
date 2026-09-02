@@ -35,8 +35,8 @@
 
 (deftest writer-did-and-post
   (testing "writer DID slug + attributed post text"
-    (is (= "did:web:news.gftd.ai:writer:google-deepmind" (core/writer-did-for-source "Google DeepMind!!")))
-    (is (= "did:web:news.gftd.ai" (core/writer-did-for-source "")))
+    (is (= "did:web:news.itonami.cloud:writer:google-deepmind" (core/writer-did-for-source "Google DeepMind!!")))
+    (is (= "did:web:news.itonami.cloud" (core/writer-did-for-source "")))
     (let [p (core/article->post-text {:title "T" :summary "S" :url "https://x"})]
       (is (re-find #"https://x" p)))))
 
