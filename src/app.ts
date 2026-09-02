@@ -1,4 +1,4 @@
-// news.gftd.ai — Datomic + ClojureScript edge worker (ADR-2606161200 rebuild).
+// news.itonami.cloud — Datomic + ClojureScript edge worker (ADR-2606161200 rebuild).
 //
 // Architecture (approved plan sorted-shimmying-beaver):
 //   client/agent ─XRPC─▶ this Worker (TS shell)
@@ -106,7 +106,7 @@ function postAs(sdk: HostSDK, did: string, text: string): void {
 
 // A-only (ADR-2606161200): news LANDS a primary source (A). It no longer posts
 // to social or scores — the A→B medium (linking, B-framed generation,
-// attributed delivery) is media.gftd.ai. Stored sources flow to media via the
+// attributed delivery) is media.itonami.cloud. Stored sources flow to media via the
 // :news/source Follow.
 async function hPublishIntel(_sdk: HostSDK, env: Env, body: Uint8Array): Promise<unknown> {
   const a = decode(body);
@@ -116,7 +116,7 @@ async function hPublishIntel(_sdk: HostSDK, env: Env, body: Uint8Array): Promise
   const sourceName: string = a.sourceName ?? a.sourceId ?? "news";
   const writerDid: string = a.writerDid ?? news.writerDidForSource(sourceName);
   await dmTransact(env, news.articleToTxEdn({ ...a, id, sourceName, writerDid, createdAt: nowISO() }));
-  return { ok: true, stored: true, id, writerDid, deliverVia: "media.gftd.ai" };
+  return { ok: true, stored: true, id, writerDid, deliverVia: "media.itonami.cloud" };
 }
 
 async function hCommitArticle(sdk: HostSDK, env: Env, body: Uint8Array): Promise<unknown> {
@@ -145,9 +145,9 @@ async function hCommitArticle(sdk: HostSDK, env: Env, body: Uint8Array): Promise
 }
 
 // Moved to the medium (ADR-2606161200). Scoring / bridge / B-framed analysis is
-// media.gftd.ai. news only collects A.
+// media.itonami.cloud. news only collects A.
 async function hAnalyzeIntel(_sdk: HostSDK, _env: Env, _body: Uint8Array): Promise<unknown> {
-  return { ok: false, movedTo: "media.gftd.ai",
+  return { ok: false, movedTo: "media.itonami.cloud",
     error: "A→B analysis moved to media (ADR-2606161200): land the source via news.publishIntel, then ai.gftd.apps.media.linkSourceToSubject + generateBrief (or media.autopilot)." };
 }
 
@@ -309,9 +309,9 @@ async function hIngest(_sdk: HostSDK, _env: Env, body: Uint8Array): Promise<unkn
 }
 
 // Moved to the medium (ADR-2606161200). Social-arbitrage = discovering high-value
-// A→B links — that is media.gftd.ai (media.autopilot / linkSourceToSubject).
+// A→B links — that is media.itonami.cloud (media.autopilot / linkSourceToSubject).
 async function hSocialArbitrageIntel(_sdk: HostSDK, _env: Env, _body: Uint8Array): Promise<unknown> {
-  return { ok: false, movedTo: "media.gftd.ai",
+  return { ok: false, movedTo: "media.itonami.cloud",
     error: "Social-arbitrage moved to media (ADR-2606161200): use ai.gftd.apps.media.autopilot." };
 }
 
@@ -330,7 +330,7 @@ export default createWorkerExport((sdk) => {
   const env = sdk.env as unknown as Env;
   sdk.app
     .command(nsid("ai.gftd.apps.news.publishIntel"), (_c, b) => hPublishIntel(sdk, env, b),
-      asAgentTool("Publish a prepared intel brief as an attributed news.gftd.ai writer-DID post"),
+      asAgentTool("Publish a prepared intel brief as an attributed news.itonami.cloud writer-DID post"),
       withCapabilityTags("write", "intel"), withOCELEvent("news.publish"))
     .command(nsid("ai.gftd.apps.news.commitArticle"), (_c, b) => hCommitArticle(sdk, env, b),
       asAgentTool("Commit an RSS-pipeline article (Datomic) and optionally post"),

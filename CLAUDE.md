@@ -1,6 +1,6 @@
-# news.gftd.ai — Datomic + ClojureScript edge worker
+# news.itonami.cloud — Datomic + ClojureScript edge worker
 
-Rebuild of news.gftd.ai (2026-06-16) onto the etzhayyim RW-free substrate after
+Rebuild of news.itonami.cloud (2026-06-16) onto the etzhayyim RW-free substrate after
 RisingWave retirement (root CLAUDE.md §RisingWave RETIRED 2026-06-11) left the
 old `MCP router → pod → RW` publish path dead (systematic 522).
 
@@ -26,7 +26,7 @@ client/agent ─XRPC─▶ CF Worker (this app)
   (`[:db/add E A V]`), never a JSON blob — Datalog-queryable. Entity ref =
   `:news/id "art-<sha256(url)>"` (dedup/upsert on canonical url). Graph label
   `news-intel-v1` is hashed to a CIDv1 client-side (Authenticated tier, Bearer).
-- **Attribution**: `did:web:news.gftd.ai:writer:{slug(sourceName)}` (PDS
+- **Attribution**: `did:web:news.itonami.cloud:writer:{slug(sourceName)}` (PDS
   multi-DID layer). Article body/scores = domain (Datomic); public post =
   social (PDS). No PII in records.
 
@@ -44,11 +44,11 @@ when execution defers (pod is a stateless executor that calls back via
 
 ```bash
 cd clj && npx shadow-cljs release worker   # → ../js/news.js
-cd .. && wrangler secret put KOTOBA_BEARER # edge-minted JWT, sub=did:web:news.gftd.ai
+cd .. && wrangler secret put KOTOBA_BEARER # edge-minted JWT, sub=did:web:news.itonami.cloud
 gftd deploy --no-svelte                    # bundles src/app.ts importing js/news.js
 ```
 
-Verify: `curl https://news.gftd.ai/health`; `publishIntel` round-trip then
+Verify: `curl https://news.itonami.cloud/health`; `publishIntel` round-trip then
 `getArticle`/`listArticles`; direct kotoba `…datomic.q` confirms
 `:news/id "art-<h>"`.
 

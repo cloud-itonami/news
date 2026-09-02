@@ -1,7 +1,7 @@
 (ns news.taxonomy
   "The A-layer's controlled vocabularies: primary-source types + a lightweight
   language normalizer. news only needs to STAMP a canonical source-type and
-  language on each source — media.gftd.ai owns the full 184-language registry
+  language on each source — media.itonami.cloud owns the full 184-language registry
   and does the per-language generation. Pure."
   (:require [clojure.string :as str]))
 

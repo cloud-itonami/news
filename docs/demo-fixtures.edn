@@ -72,7 +72,7 @@
   :sourceName "Example Agency 事務局"
   :createdAt "2026-01-15T09:30:00Z"}
 
- :post-uri "at://did:web:news.gftd.ai/app.bsky.feed.post/3kxq1"
+ :post-uri "at://did:web:news.itonami.cloud/app.bsky.feed.post/3kxq1"
  :updated-at "2026-01-15T10:05:00Z"
 
  ;; Query builders: the filtered and unfiltered form of each.

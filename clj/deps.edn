@@ -1,6 +1,6 @@
 {:paths ["src"]
 
- ;; news.gftd.ai — ClojureScript edge worker core.
+ ;; news.itonami.cloud — ClojureScript edge worker core.
  ;;
  ;; The whole news.* business core is portable, dependency-free `.cljc`:
  ;; pure validation, EDN tx/query construction for kotoba Datomic, row

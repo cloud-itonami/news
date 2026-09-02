@@ -1,4 +1,4 @@
-;; news.gftd.ai edge-worker core build.
+;; news.itonami.cloud edge-worker core build.
 ;;
 ;; :target :esm emits a tree-shakeable ES module exporting the pure news.core
 ;; fns by name, so ../src/app.ts can `import * as news from "../js/news.js"`.

@@ -1,5 +1,5 @@
 (ns news.core
-  "Pure news.gftd.ai business core — compiled to an ES module by shadow-cljs
+  "Pure news.itonami.cloud business core — compiled to an ES module by shadow-cljs
   and called from ../src/app.ts. NO async IO here: app.ts owns fetch, the
   magatama SDK and Web Crypto (sha256 → article id / graph CID). These fns
   validate input, build the EDN wire payloads for kotoba Datomic
@@ -43,13 +43,13 @@
       (str/replace #"^-+|-+$" "")))
 
 (defn writer-did-for-source
-  "did:web:news.gftd.ai:writer:{slug(sourceName)} — path-based attribution DID
+  "did:web:news.itonami.cloud:writer:{slug(sourceName)} — path-based attribution DID
   (resolved by the PDS multi-DID layer). Falls back to the primary DID."
   [source-name]
   (let [slug (slugify source-name)]
     (if (str/blank? slug)
-      "did:web:news.gftd.ai"
-      (str "did:web:news.gftd.ai:writer:" slug))))
+      "did:web:news.itonami.cloud"
+      (str "did:web:news.itonami.cloud:writer:" slug))))
 
 ;; ── EDN tx construction ─────────────────────────────────────────────────────
 
