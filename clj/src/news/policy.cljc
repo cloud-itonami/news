@@ -5,7 +5,7 @@
   whether the raw audio may be retained, from the source's declared rights
   policy. Runs at the edge (no IO) so the source roster / audit can be served
   without waking the pod."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (defn- ->clj [x] #?(:cljs (js->clj x :keywordize-keys true) :clj x))
 (defn- ->js [x] #?(:cljs (clj->js x) :clj x))
@@ -23,7 +23,7 @@
 (defn gate
   "Pure: policy keyword + requested retainAudio → decision map."
   [rights-policy retain-requested?]
-  (let [p (or (get policy-table (some-> rights-policy str/lower-case str/trim))
+  (let [p (or (get policy-table (some-> rights-policy str/lower str/trim))
               (get policy-table "unknown"))]
     {:rightsPolicy (or rights-policy "unknown")
      :publishAllowed (:publish p)
