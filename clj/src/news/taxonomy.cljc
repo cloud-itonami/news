@@ -3,7 +3,7 @@
   language normalizer. news only needs to STAMP a canonical source-type and
   language on each source — media.itonami.cloud owns the full 184-language registry
   and does the per-language generation. Pure."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (defn- ->js [x] #?(:cljs (clj->js x) :clj x))
 
@@ -22,14 +22,14 @@
 
 ;; case-insensitive lookup → canonical (camelCase preserved, e.g. "liveAudio").
 (def ^:private by-lower
-  (into {} (map (fn [t] [(str/lower-case t) t])) source-types))
+  (into {} (map (fn [t] [(str/lower t) t])) source-types))
 
-(defn source-type? [t] (contains? by-lower (some-> t str str/lower-case str/trim)))
+(defn source-type? [t] (contains? by-lower (some-> t str str/lower str/trim)))
 
 (defn normalize-source-type
   "Canonical source type (case-insensitive match) or \"rss\" as the default."
   [t]
-  (get by-lower (some-> t str str/lower-case str/trim) "rss"))
+  (get by-lower (some-> t str str/lower str/trim) "rss"))
 
 (defn normalize-lang
   "Lightweight ISO 639-1 base-code normalizer: lowercases, strips region
@@ -38,7 +38,7 @@
   [input]
   (if (or (nil? input) (and (string? input) (str/blank? input)))
     "en"
-    (let [base (-> (str input) str/lower-case str/trim (str/split #"[-_]") first)]
+    (let [base (-> (str input) str/lower str/trim (str/split #"[-_]") first)]
       (if (re-matches #"[a-z]{2,3}" (or base "")) base "en"))))
 
 ;; ── JS exports ───────────────────────────────────────────────────────────────

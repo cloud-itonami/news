@@ -4,7 +4,7 @@
   (50-infra/k8s/news-social-arbitrage-actor/worker.cljc). These give a zero-cost
   baseline at the edge; the LLM narrative draft (when needed) is fetched
   separately by the active host runtime when an independently owned LLM route exists."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (defn- ->clj [x] #?(:cljs (js->clj x :keywordize-keys true) :clj x))
 (defn- ->js [x] #?(:cljs (clj->js x) :clj x))
@@ -19,7 +19,7 @@
   ["how to" "guide" "apply" "deadline" "free" "support" "hotline" "申請" "支援" "無料"])
 
 (defn- term-hits [text terms]
-  (let [t (str/lower-case (or text ""))]
+  (let [t (str/lower (or text ""))]
     (reduce (fn [n term] (if (str/includes? t term) (inc n) n)) 0 terms)))
 
 (defn- clamp [x lo hi] (max lo (min hi x)))

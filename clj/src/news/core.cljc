@@ -11,7 +11,7 @@
   of `[:db/add E A V]` ops, where E is the stable string entity ref, A a
   namespaced keyword and V a string / number / boolean. `pr-str` reproduces
   exactly that grammar."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.edn :as edn]
             [news.taxonomy :as tax]
             #?(:cljs [cljs.reader])))
@@ -38,7 +38,7 @@
   "Lowercase, keep [a-z0-9-], collapse runs of other chars to '-'."
   [s]
   (-> (or s "")
-      str/lower-case
+      str/lower
       (str/replace #"[^a-z0-9]+" "-")
       (str/replace #"^-+|-+$" "")))
 
