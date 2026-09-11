@@ -2679,7 +2679,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
             <path d="M11 11h2v6h-2z" fill="Canvas"></path>
           </svg>
           <span class="dads-notification-banner__heading-text">Fixtures in, computed values out</span>
-        </h2><div class="dads-notification-banner__body"><p>The <strong>inputs</strong> are fixtures — they are not live articles. The <strong>outputs</strong> (scores, verdicts, EDN payloads) are computed when the page is generated, by the same functions <code>src/app.ts</code> calls in production (the <code>:exports</code> map in <code>clj/shadow-cljs.edn</code>).</p><p>Regenerate with <code>nbb scripts/gen-demo.cljs</code>. The generator refuses to emit a page whose tables would show nothing — it asserts the scorer discriminated, the rights gate both allowed and blocked, default-deny held, and the tx payload carries normalized provenance.</p></div></div>
+        </h2><div class="dads-notification-banner__body"><p>The <strong>inputs</strong> are fixtures — they are not live articles. The <strong>outputs</strong> (scores, verdicts, EDN payloads) are computed when the page is generated, by the same functions <code>src/app.ts</code> calls in production (the <code>:exports</code> map in <code>clj/shadow-cljs.edn</code>).</p><p>Regenerate with <code>kbb --backend sci scripts/gen-demo.cljk</code>. The generator refuses to emit a page whose tables would show nothing — it asserts the scorer discriminated, the rights gate both allowed and blocked, default-deny held, and the tx payload carries normalized provenance.</p></div></div>
       </section>
       <section class="dds-ext-section" id="scoring">
         <h2 class="dads-heading" data-size="32">Deterministic intel scoring</h2>

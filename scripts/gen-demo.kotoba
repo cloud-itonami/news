@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Generate `docs/demo.html` — a static demo of the news.itonami.cloud edge core.
 ;;
 ;; WHY THIS IS A GENERATOR AND NOT A PAGE
@@ -23,7 +23,7 @@
 ;; (fixtures, core, dds.css), which is what makes `--check` meaningful: it can
 ;; tell "the committed page is stale" apart from "the clock moved".
 ;;
-;;   nbb --classpath "clj/src:<dds>/src:<css>/src:<html>/src" \
+;;   kbb --backend sci --classpath "clj/src:<dds>/src:<css>/src:<html>/src" \
 ;;       scripts/gen-demo.cljs [--out docs/demo.html] [--dds-css PATH] [--check]
 ;;
 ;; The design-system sources are siblings in the west workspace; from this repo
@@ -204,7 +204,7 @@
               [:strong "outputs"] " (scores, verdicts, EDN payloads) are computed when the page is generated, by the same functions "
               [:code "src/app.ts"] " calls in production (the "
               [:code ":exports"] " map in " [:code "clj/shadow-cljs.edn"] ")."]
-             [:p "Regenerate with " [:code "nbb scripts/gen-demo.cljs"]
+             [:p "Regenerate with " [:code "kbb --backend sci scripts/gen-demo.cljk"]
               ". The generator refuses to emit a page whose tables would show nothing — it asserts the scorer discriminated, the rights gate both allowed and blocked, default-deny held, and the tx payload carries normalized provenance."]]))
 
    (dds/section {:title "Deterministic intel scoring" :id "scoring"}
