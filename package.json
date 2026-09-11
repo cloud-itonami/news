@@ -10,8 +10,8 @@
     "typescript": "^6.0.2"
   },
   "scripts": {
-    "cljs:release": "cd clj && npx shadow-cljs release worker",
-    "cljs:watch": "cd clj && npx shadow-cljs watch worker",
+    "cljs:release": "cd clj && amu compile --target wasm32-browser worker",
+    "cljs:watch": "cd clj && amu compile --target wasm32-browser worker",
     "typecheck": "tsc --noEmit"
   }
 }

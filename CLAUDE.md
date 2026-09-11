@@ -43,7 +43,7 @@ when execution defers (pod is a stateless executor that calls back via
 ## Build & deploy
 
 ```bash
-cd clj && npx shadow-cljs release worker   # → ../js/news.js
+cd clj && amu compile --target wasm32-browser worker   # → ../js/news.js
 cd .. && wrangler secret put KOTOBA_BEARER # edge-minted JWT, sub=did:web:news.itonami.cloud
 gftd deploy --no-svelte                    # bundles src/app.ts importing js/news.js
 ```
@@ -62,7 +62,7 @@ only.
 
 ```bash
 R=../../kotoba-lang                        # west siblings
-nbb --classpath "clj/src:$R/jp-go-digital-design-system/src:$R/css/src:$R/html/src" \
+kbb --backend sci --classpath "clj/src:$R/jp-go-digital-design-system/src:$R/css/src:$R/html/src" \
     scripts/gen-demo.cljs [--check]
 ```
 

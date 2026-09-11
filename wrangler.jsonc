@@ -38,7 +38,7 @@
   // Regenerate the ClojureScript ESM bundle (js/news.js) before wrangler
   // bundles src/app.ts which imports it.
   "build": {
-    "command": "cd clj && npx shadow-cljs release worker"
+    "command": "cd clj && amu compile --target wasm32-browser worker"
   },
   "observability": {
     "enabled": true

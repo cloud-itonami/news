@@ -1,5 +1,5 @@
 (ns news.core-test
-  "JVM unit tests for the pure news (A-layer) cores. Run: clojure -M:test"
+  "JVM unit tests for the pure news (A-layer) cores. Run: kbb -M:test"
   (:require [clojure.test :refer [deftest is testing]]
             [news.core :as core]
             [news.taxonomy :as tax]
