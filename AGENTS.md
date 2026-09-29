@@ -1,7 +1,7 @@
 # news.itonami.cloud — Datomic + ClojureScript edge worker
 
 Rebuild of news.itonami.cloud (2026-06-16) onto the etzhayyim RW-free substrate after
-RisingWave retirement (root CLAUDE.md §RisingWave RETIRED 2026-06-11) left the
+RisingWave retirement (root AGENTS.md §RisingWave RETIRED 2026-06-11) left the
 old `MCP router → pod → RW` publish path dead (systematic 522).
 
 ## Architecture (ADR-2606161200 / plan: sorted-shimmying-beaver)
