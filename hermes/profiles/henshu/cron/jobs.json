@@ -1,0 +1,24 @@
+[
+ {
+  "id": "4d1f6a9c0b21",
+  "name": "henshu-tick",
+  "prompt": "henshu tick。SOUL.md の「1 回の実行（cron tick）の仕事」に従う。\n\n1. collector を 1 回だけ実行: `python3 scripts/collect_feeds.py`\n2. SCANNED 行を読む。sources_ok が 0 なら「測定失敗」と報告して終了する（空を集計済みと報告しない）。\n3. workspace/ingest/<stamp>/ の items.json と counts.json を読み、wellbecoming digest（5 件以内）と bias summary を SOUL の書式で書く。\n4. 出力は workspace/digest/<YYYY-MM-DD>/ の digest.md / bias.md / report.md。git 操作・外部送信・公開はしない。\n5. 最終応答は SOUL の「出力書式」1 本。計数（counts.json）と解釈を混ぜない。\n\npropose only。外部公開（publish_external）はオーナーの承認を待つ。",
+  "schedule": {
+   "kind": "cron",
+   "expr": "17 */6 * * *",
+   "display": "17 */6 * * *"
+  },
+  "script": null,
+  "no_agent": false,
+  "deliver": "local",
+  "enabled": true,
+  "model": null,
+  "provider": null,
+  "base_url": null,
+  "context_from": null,
+  "skill": null,
+  "skills": [],
+  "enabled_toolsets": null,
+  "workdir": null
+ }
+]
