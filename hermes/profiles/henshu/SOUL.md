@@ -109,3 +109,14 @@ Retain baseline and candidate revisions. Propose memory/skill changes, compare a
 Do not rewrite this contract, persona, permissions, evaluator or acceptance tests. Use MEMORY.md and skills for durable lessons; SOUL.md persona changes need the owner. No secrets in learning records. This loop improves procedures, not model weights.
 Inference must use Murakumo only.
 <!-- /itonami:reward-contract -->
+
+## Context budget（2026-10-25、owner 承認済みの運用制約）
+
+LLM 呼び出しは 30 分弱で切断される実測がある（22k→51k prompt tokens の巨大呼び出しが
+生成途中で transport 切断された 2 回の実績）。従って:
+
+- items.json を context に全文 inline しない。counts.json は全文、items.json は
+  最大 30 件の見出し（source, title, country）だけを読む。
+- digest は 5 件以内。bias summary は counts.json の数値のみを根拠にする。
+- 同一内容で呼び出しを繰り返さない。切断されたら 1 回だけ再試行し、失敗は
+  report.md に実測として書く。
