@@ -1,0 +1,24 @@
+# Host-local blocks (command_allowlist, onboarding, secrets, skills, terminal) are kept on the host and omitted here.
+# itonami profile: inference rides itonami.edn :inference (murakumo only). Openrouter is denied there.
+model:
+  provider: murakumo
+  base_url: https://api.murakumo.cloud/v1
+  default: murakumo/free
+  max_tokens: 8192
+  context_length: 131072
+providers:
+  murakumo:
+    base_url: https://api.murakumo.cloud/v1
+    api_mode: chat_completions
+    models:
+      nex-n2.5-mini-uncensored:
+        context_length: 65536
+        max_tokens: 8192
+    stale_timeout_seconds: 600
+    request_timeout_seconds: 900
+    extra_headers:
+      HTTP-Referer: https://itonami.cloud
+      X-OpenRouter-Title: Itonami By KotobaLabs
+agent:
+  max_turns: 80
+  run_budget_seconds: 1800

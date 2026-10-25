@@ -1,0 +1,23 @@
+;; Unlisted capabilities are denied. The capability list is copied into
+;; itonami.edn and grants nothing by itself - this file is the authority.
+{:yakuwari/id :henshu
+ :yakuwari/project "cloud-itonami/news"
+ :yakuwari/objective "Collect registered public primary news sources, flatten them into attributed insights, and compile a wellbecoming news digest plus a news bias summary each tick."
+ :yakuwari/scale {:min 1 :desired 1 :max 1}
+ :yakuwari/runners [{:runner :itonami :weight 1}]
+ :yakuwari/capabilities
+ [{:capability :fetch_public_feed :decision :autonomous
+   :note "HTTP GET of the feeds registered in scripts/sources.json only; no login, no paywall bypass, no scraping behind a wall"}
+  {:capability :read_source :decision :autonomous}
+  {:capability :analyze_source :decision :autonomous
+   :note "LLM summarization on the murakumo rail only (itonami.edn :inference)"}
+  {:capability :run_local_verification :decision :autonomous}
+  {:capability :write_workspace :decision :autonomous
+   :note "digest, bias and report files under the profile workspace only"}
+  {:capability :publish_external :decision :approval-required
+   :note "any post, feed or API send outside the profile workspace waits for the owner"}
+  {:capability :git_push :decision :blocked}
+  {:capability :git_merge :decision :blocked}
+  {:capability :use_signing_identity :decision :blocked}
+  {:capability :export_private_keys :decision :blocked}
+  {:capability :enable_cron :decision :blocked}]}
